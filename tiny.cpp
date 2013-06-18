@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 
 int memory[8192];
 
@@ -30,7 +32,7 @@ enum op_id
   op_read, //  x <- readmem(y)
   op_write, // writemem(y,x)
   op_print, // putc(x)
-}
+};
  /* 
   opcode format:
   x, y, z: register id (3 bits, 0 ~ 7)
@@ -39,6 +41,8 @@ enum op_id
    op_id |  x  |  y  |  z
     
 */
+void put(const char* s) { puts(s); }
+void put(int ch) { putc(ch, stdout); }
 
 int main()
 {
@@ -78,23 +82,23 @@ int main()
         
       case op_read: //  x <- readmem(y)
         if ( z !=0 )
-          puts("ERROR");
+          put("ERROR");
         else
           reg[x] = readmem(reg[y]);
         break;
       
       case op_write: // writemem(y,x)
         if ( z !=0 )
-          puts("ERROR");
+          put("ERROR");
         else
           writemem(reg[y],reg[x]);
         break;      
       
       case op_print: // putc(x)
         if ( y !=0 || z !=0 )
-          puts("ERROR");
+          put("ERROR");
         else
-          putc(reg[x]);
+          put(reg[x]);
         break;
     }
   }
