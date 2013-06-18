@@ -1,16 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int memory[8192];
+#define MEM_SIZE 8192
+#define MEM_MASK (MEM_SIZE-1)
+
+int memory[MEM_SIZE];
+
+//these are the same address on memory
+
+//0x1000_0000
+//0x2000_0000
+//0x3000_0000
 
 int readmem(int where)
 {
-  return memory[where];
+	return memory[where & MEM_MASK]; // mask memory to avoid buffer overflow
 }
 
 void writemem(int where, int what)
 {
-  memory[where]=what;
+  memory[where & MEM_MASK]=what; // mask memory to avoid buffer overflow
 }
 
 int reg[8];
