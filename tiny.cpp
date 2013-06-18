@@ -4,7 +4,50 @@
 #define MEM_SIZE 8192
 #define MEM_MASK (MEM_SIZE-1)
 
-int memory[MEM_SIZE];
+/*
+op_id:
+r <- register r[0] -> register 0
+*/
+enum op_id
+{
+  op_nop = 0, // (do nothing)
+  op_add, //   r[x] <- r[y] + r[z]
+  op_shift, // r[x] <- r[y] << r[z]
+  op_xor, //   r[x] <- r[y] ^ r[z]
+  
+  op_read, //  r[x] <- readmem(r[y])
+  op_write, // writemem(r[y],r[x])
+  op_print, // printf("%d",r[x])
+  op_put,   // putc(r[x])
+  op_mov, 	// r[x] <- yx
+};
+/* 
+  opcode format:
+  x, y, z: register id (3 bits, 0 ~ 7)
+  
+  12 ~ 9 | 8~6 | 5~3 | 2~0
+   op_id |  x  |  y  |  z
+   op_id |  x  |    imm
+*/
+
+//mov x, 0 -> 
+
+int memory[MEM_SIZE] = { 
+	//(op_mov<<9)   | (0<<6) | 3, //mov r0, 3
+	(op_mov<<9)   | (1<<6) | 5, //mov r1, 5
+
+	(op_add<<9)   | (0<<6) | (0<<3) | (1<<0), //add r0, r0,r1
+
+	(op_print<<9) | (0<<6) , //print r0
+
+
+
+	(op_mov<<9)   | (1<<6) | '\n', //mov r1, '\n'
+
+	(op_put<<9) | (1<<6) , //op_put r1
+
+
+};
 
 //these are the same address on memory
 
@@ -27,33 +70,10 @@ int pc;
 
 bool running = true;
 
-
-/*
-op_id:
-*/
-enum op_id
-{
-  op_nop = 0, // (do nothing)
-  op_add, //   x <- y + z
-  op_shift, // x <- y << z
-  op_xor, //   x <- y ^ z
-  
-  op_read, //  x <- readmem(y)
-  op_write, // writemem(y,x)
-  op_print, // putc(x)
-};
- /* 
-  opcode format:
-  x, y, z: register id (3 bits, 0 ~ 7)
-  
-  11 ~ 9 | 8~6 | 5~3 | 2~0
-   op_id |  x  |  y  |  z
-    
-*/
 void put(const char* s) { puts(s); }
 void put(int ch) { putc(ch, stdout); }
 
-int main()
+int main(int argc, const char** argv)
 {
 
   while(running)
@@ -68,9 +88,11 @@ int main()
                             //x & 0b000000111 (masking)
                             //0x -> hex
                             //0x0005_1234 <- nice formating
-    int y = (op >> 3) & 7;
-    int z = (op >> 0) & 7;
     
+	int y = (op >> 3) & 7;	//bits 5 to 3
+    int z = (op >> 0) & 7;	//bits 2 to 0
+    int imm = (op >> 0) & 63; //bits 5 to 0
+
     switch(op_id)
     {
       case op_nop: //do nothing
@@ -103,12 +125,23 @@ int main()
           writemem(reg[y],reg[x]);
         break;      
       
-      case op_print: // putc(x)
+      case op_print: //printf("%d",r[x])
+        if ( y !=0 || z !=0 )
+          put("ERROR");
+        else
+          printf("%d",reg[x]);
+        break;
+
+	case op_put: // putc(x)
         if ( y !=0 || z !=0 )
           put("ERROR");
         else
           put(reg[x]);
         break;
+
+	  case op_mov:
+		  reg[x] = imm;
+		  break;
     }
   }
 }
