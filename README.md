@@ -10,7 +10,12 @@ others: google.com
 
 Compile
 -------------
-gcc tiny.cpp -o tiny.elf
+
+g++ tiny.cpp -o tiny.elf
+
+or
+
+gcc -lstdc++ tiny.cpp -o tiny.elf
 
 run
 -------------
