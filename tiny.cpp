@@ -4,13 +4,17 @@
 #define MEM_SIZE 8192
 #define MEM_MASK (MEM_SIZE-1)
 
+#define FMT1(op,x,y,z) ( ((op & 15) << 9) | ((x & 7) << 6) | ((y & 7) << 3) | ((z & 7) << 0) )
+#define FMT2(op,x,imm) ( ((op & 15) << 9) | ((x & 7) << 6) | ((imm & 63) << 0) )
+
 /*
 op_id:
 r <- register r[0] -> register 0
 */
 enum op_id
 {
-  op_nop = 0, // (do nothing)
+  op_stop = 0,
+  op_nop, // (do nothing)
   op_add, //   r[x] <- r[y] + r[z]
   op_shift, // r[x] <- r[y] << r[z]
   op_xor, //   r[x] <- r[y] ^ r[z]
@@ -19,8 +23,12 @@ enum op_id
   op_write, // writemem(r[y],r[x])
   op_print, // printf("%d",r[x])
   op_put,   // putc(r[x])
-  op_mov, 	// r[x] <- yx
+  op_mov, 	// r[x] <- imm
 };
+
+#define ADD(x,y,z) FMT1(op_add,x,y,z)
+#define XOR(x,y,z) FMT1(op_xor,x,y,z)
+
 /* 
   opcode format:
   x, y, z: register id (3 bits, 0 ~ 7)
